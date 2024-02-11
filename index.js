@@ -33,6 +33,7 @@ async function run() {
    const menuCollection = client.db('BistroDB').collection('menu')
    const reviewCollection = client.db('BistroDB').collection('reviews')
    const cartCollection = client.db('BistroDB').collection('carts')
+   const userCollection = client.db('BistroDB').collection('users')
 
 
    app.get('/menu', async(req, res) => {
@@ -46,7 +47,8 @@ async function run() {
    })
 
 
-   //carts collection
+   //carts related api collection
+
   app.get('/carts', async(req, res) => {
     const email = req.query.email;
     const query = {email : email}
@@ -68,6 +70,18 @@ async function run() {
     res.send(result)
    })
 
+  //  user related api
+
+  app.post('/users', async(req, res) => {
+    const user = req.body;
+    const query = {email : user.email}
+    const existingUser = await userCollection.findOne(query)
+    if(existingUser){
+    return res.send({mesage : 'user already exist', insertedId : null})
+    }
+    const result = await userCollection.insertOne();
+    res.send(result)
+  })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
