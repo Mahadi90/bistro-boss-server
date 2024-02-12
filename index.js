@@ -1,4 +1,5 @@
 const express = require('express')
+const jwt = require('jsonwebtoken')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors')
 require('dotenv').config()
@@ -35,6 +36,14 @@ async function run() {
    const cartCollection = client.db('BistroDB').collection('carts')
    const userCollection = client.db('BistroDB').collection('users')
 
+  //  jwt related api
+  app.post('/jwt', async(req, res)=>{
+    const user = req.body;
+    const token = jwt.sign(user, process.env.TOKEN_ACCESS_SECRET , {
+      expiresIn : "1h"
+    })
+    res.send({token})
+  })
 
    app.get('/menu', async(req, res) => {
     const result = await menuCollection.find().toArray()
@@ -87,6 +96,19 @@ async function run() {
     const result = await userCollection.insertOne(user);
     res.send(result)
   })
+
+  app.patch('/users/admin/:id', async(req, res) => {
+    const id = req.params.id;
+    const filter = { _id : new ObjectId(id)}
+    const updatedDoc = {
+      $set : {
+        role : 'admin'
+      }
+    }
+    const result = await userCollection.updateOne(filter, updatedDoc)
+    res.send(result)
+  })
+
   app.delete('/users/:id', async(req, res) => {
     const id = req.params.id;
     const query = { _id : new ObjectId(id)}
